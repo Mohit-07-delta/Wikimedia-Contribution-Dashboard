@@ -239,7 +239,7 @@ export default function ContributionHeatmap({ data, availableYears, selectedYear
         {/* Tooltip */}
         {tooltip && (
           <div
-            className="fixed z-50 pointer-events-none bg-wiki-blue text-white text-wiki-xs px-2 py-1 rounded-wiki shadow-sm whitespace-nowrap"
+            className="fixed z-50 pointer-events-none bg-wiki-surface border border-wiki-border text-wiki-blue text-wiki-xs px-2 py-1 rounded-wiki shadow-sm whitespace-nowrap"
             style={{
               left: tooltip.x,
               top: tooltip.y - 32,

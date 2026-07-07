@@ -344,6 +344,7 @@ router.get(
   "/:project/:username/heatmap/:year",
   async (req: Request, res: Response) => {
     const { project, username, year } = req.params;
+    console.log(`\n[Backend] Heatmap route hit. Project: ${project}, User: ${username}, Year: ${year}`);
     const cacheKey = MemoryCache.key("heatmap", project, username, year);
 
     const cached = cache.get<HeatmapResponse>(cacheKey);
@@ -382,6 +383,8 @@ router.get(
       const startOfYear = new Date(Date.UTC(targetYear, 0, 1, 0, 0, 0)).toISOString();
       const endOfYear = new Date(Date.UTC(targetYear, 11, 31, 23, 59, 59)).toISOString();
 
+      console.log(`[Backend] Date boundaries for ${year} - start: ${startOfYear}, end: ${endOfYear}`);
+
       // Paginate through usercontribs for the entire year
       const allTimestamps: string[] = [];
       let uccontinue: string | undefined;
@@ -408,6 +411,7 @@ router.get(
         if (uccontinue) params.set("uccontinue", uccontinue);
 
         const url = `https://${project}/w/api.php?${params.toString()}`;
+        console.log(`[Backend] Fetching from MediaWiki: ${url}`);
         
         try {
           const data = await fetchJson<MediaWikiUserContribsResponse>(url);

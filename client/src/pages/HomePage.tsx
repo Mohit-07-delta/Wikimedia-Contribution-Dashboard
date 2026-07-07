@@ -22,7 +22,7 @@ export default function HomePage() {
   return (
     <div className="min-h-screen bg-wiki-bg">
       {/* ── Wikipedia-style top bar ──────────────────────────────────────── */}
-      <header className="bg-wiki-header border-b border-wiki-border">
+      <header className="bg-white border-b border-wiki-border">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
           {/* Wikipedia "W" style mark */}
           <svg className="w-8 h-8 text-wiki-text" viewBox="0 0 24 24" fill="currentColor">

@@ -84,7 +84,7 @@ export default function GlobalDashboardPage() {
   return (
     <div className="min-h-screen bg-wiki-bg">
       {/* ── Header ──────────────────────────────────────────────────────── */}
-      <header className="bg-wiki-header border-b border-wiki-border sticky top-0 z-10">
+      <header className="bg-white border-b border-wiki-border sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
           <div>
             <h1 className="font-serif text-2xl text-wiki-text">
