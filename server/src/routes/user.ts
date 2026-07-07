@@ -382,19 +382,25 @@ router.get(
       const startOfYear = new Date(Date.UTC(targetYear, 0, 1, 0, 0, 0)).toISOString();
       const endOfYear = new Date(Date.UTC(targetYear, 11, 31, 23, 59, 59)).toISOString();
 
-      // Paginate through usercontribs, up to 1000 edits total for the year
-      const MAX_EDITS = 1000;
+      // Paginate through usercontribs for the entire year
       const allTimestamps: string[] = [];
       let uccontinue: string | undefined;
 
-      while (allTimestamps.length < MAX_EDITS) {
+      while (true) {
+        // Safety cap: don't fetch more than 50,000 edits for a single year to prevent memory/timeout issues
+        if (allTimestamps.length >= 50000) {
+          console.warn(`[Heatmap] Reached 50,000 edit safety cap for ${username} in ${year}`);
+          break;
+        }
+
         const params = new URLSearchParams({
           action: "query",
           list: "usercontribs",
           ucuser: username,
-          uclimit: String(Math.min(50, MAX_EDITS - allTimestamps.length)),
+          uclimit: "500", // Max for standard users
           ucprop: "timestamp",
-          ucstart: endOfYear, // MediaWiki iterates backwards in time by default
+          ucdir: "older", // Start from endOfYear and go backwards to startOfYear
+          ucstart: endOfYear,
           ucend: startOfYear,
           format: "json",
           origin: "*",
@@ -402,17 +408,30 @@ router.get(
         if (uccontinue) params.set("uccontinue", uccontinue);
 
         const url = `https://${project}/w/api.php?${params.toString()}`;
-        const data = await fetchJson<MediaWikiUserContribsResponse>(url);
+        
+        try {
+          const data = await fetchJson<MediaWikiUserContribsResponse>(url);
 
-        for (const c of data.query.usercontribs) {
-          allTimestamps.push(c.timestamp);
-        }
+          if (!data || !data.query || !data.query.usercontribs) {
+            console.error(`[Heatmap] Invalid response format for ${username} at ${url}`);
+            break;
+          }
 
-        if (!data.continue?.uccontinue || data.query.usercontribs.length === 0) {
-          break;
+          for (const c of data.query.usercontribs) {
+            allTimestamps.push(c.timestamp);
+          }
+
+          if (!data.continue?.uccontinue || data.query.usercontribs.length === 0) {
+            break; // No more pages
+          }
+          uccontinue = data.continue.uccontinue;
+        } catch (fetchErr) {
+          console.error(`[Heatmap] Pagination failed for ${username} in ${year}:`, fetchErr);
+          break; // Stop paginating, but return what we have so far
         }
-        uccontinue = data.continue.uccontinue;
       }
+
+      console.log(`[Heatmap] Total edits fetched for ${username} in ${year}: ${allTimestamps.length}`);
 
       // Aggregate by YYYY-MM-DD
       const counts = new Map<string, number>();

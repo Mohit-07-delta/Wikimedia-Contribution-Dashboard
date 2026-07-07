@@ -12,8 +12,8 @@ class MemoryCache {
    * Build a cache key from route-specific parts.
    * Example: "summary:en.wikipedia.org:Jimbo_Wales"
    */
-  static key(prefix: string, project: string, username: string): string {
-    return `${prefix}:${project}:${username}`;
+  static key(...parts: string[]): string {
+    return parts.join(":");
   }
 
   get<T>(key: string): T | null {
