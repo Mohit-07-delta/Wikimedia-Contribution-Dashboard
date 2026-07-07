@@ -10,6 +10,8 @@ import type {
   NamespaceEdit,
   RecentEdit,
   HeatmapDay,
+  GlobalSummary,
+  MergedWiki,
 } from "../types";
 
 const router = Router();
@@ -136,7 +138,60 @@ function sendError(res: Response, err: unknown): void {
   }
 }
 
-// ── Route 1: User summary ────────────────────────────────────────────────────
+// ── Route 1: Global Contributions ──────────────────────────────────────────────
+
+router.get("/global/:username", async (req: Request, res: Response) => {
+  const { username } = req.params;
+  const cacheKey = MemoryCache.key("global", username);
+
+  const cached = cache.get<GlobalSummary>(cacheKey);
+  if (cached) {
+    res.json(cached);
+    return;
+  }
+
+  try {
+    const globalParams = new URLSearchParams({
+      action: "query",
+      meta: "globaluserinfo",
+      guiuser: username,
+      guiprop: "editcount|merged",
+      format: "json",
+      origin: "*",
+    });
+    const globalUrl = `https://meta.wikimedia.org/w/api.php?${globalParams.toString()}`;
+
+    const globalInfo = await fetchJson<MediaWikiGlobalUserInfoResponse>(globalUrl);
+    const info = globalInfo.query.globaluserinfo;
+
+    if (!info) {
+      throw new ApiProxyError("not_found", `User '${username}' not found globally`);
+    }
+
+    const mergedWikis: MergedWiki[] = (info.merged || [])
+      .map((w) => ({
+        wikiName: w.wiki,
+        url: w.url,
+        editCount: w.editcount,
+        registrationDate: w.registration,
+      }))
+      .sort((a, b) => b.editCount - a.editCount); // Sort by edit count descending
+
+    const summary: GlobalSummary = {
+      username: info.name,
+      totalGlobalEdits: info.editcount,
+      totalWikis: mergedWikis.length,
+      mergedWikis,
+    };
+
+    cache.set(cacheKey, summary);
+    res.json(summary);
+  } catch (err) {
+    sendError(res, err);
+  }
+});
+
+// ── Route 2: User summary (Specific Project) ─────────────────────────────────
 
 router.get(
   "/:project/:username/summary",

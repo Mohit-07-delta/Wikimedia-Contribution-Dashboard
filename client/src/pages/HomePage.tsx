@@ -1,39 +1,9 @@
 import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
-const PROJECTS = [
-  // Major Wikipedia Languages
-  { label: "English Wikipedia", value: "en.wikipedia.org" },
-  { label: "Hindi Wikipedia", value: "hi.wikipedia.org" },
-  { label: "Spanish Wikipedia", value: "es.wikipedia.org" },
-  { label: "French Wikipedia", value: "fr.wikipedia.org" },
-  { label: "German Wikipedia", value: "de.wikipedia.org" },
-  { label: "Japanese Wikipedia", value: "ja.wikipedia.org" },
-  { label: "Russian Wikipedia", value: "ru.wikipedia.org" },
-  { label: "Chinese Wikipedia", value: "zh.wikipedia.org" },
-  { label: "Arabic Wikipedia", value: "ar.wikipedia.org" },
-  { label: "Portuguese Wikipedia", value: "pt.wikipedia.org" },
-  { label: "Italian Wikipedia", value: "it.wikipedia.org" },
-  // Core Wikimedia Projects
-  { label: "Wikidata", value: "www.wikidata.org" },
-  { label: "Wikimedia Commons", value: "commons.wikimedia.org" },
-  { label: "Meta-Wiki", value: "meta.wikimedia.org" },
-  { label: "MediaWiki", value: "www.mediawiki.org" },
-  // Sister Projects (English)
-  { label: "Wiktionary (EN)", value: "en.wiktionary.org" },
-  { label: "Wikisource (EN)", value: "en.wikisource.org" },
-  { label: "Wikiquote (EN)", value: "en.wikiquote.org" },
-  { label: "Wikibooks (EN)", value: "en.wikibooks.org" },
-  { label: "Wikinews (EN)", value: "en.wikinews.org" },
-  { label: "Wikiversity (EN)", value: "en.wikiversity.org" },
-  { label: "Wikispecies", value: "species.wikimedia.org" },
-  { label: "Wikivoyage (EN)", value: "en.wikivoyage.org" },
-] as const;
-
 export default function HomePage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
-  const [project, setProject] = useState<string>(PROJECTS[0].value);
   const [error, setError] = useState("");
 
   function handleSubmit(e: FormEvent) {
@@ -46,7 +16,7 @@ export default function HomePage() {
     }
 
     setError("");
-    navigate(`/dashboard/${project}/${encodeURIComponent(trimmed)}`);
+    navigate(`/user/${encodeURIComponent(trimmed)}`);
   }
 
   return (
@@ -114,28 +84,6 @@ export default function HomePage() {
               {error && (
                 <p className="mt-1 text-wiki-sm text-wiki-red">{error}</p>
               )}
-            </div>
-
-            {/* Project */}
-            <div>
-              <label
-                htmlFor="project"
-                className="block text-wiki-sm font-bold text-wiki-text mb-1"
-              >
-                Project
-              </label>
-              <select
-                id="project"
-                value={project}
-                onChange={(e) => setProject(e.target.value)}
-                className="w-full border border-wiki-border rounded-wiki px-3 py-1.5 text-wiki-base text-wiki-text bg-wiki-surface outline-none transition-colors focus:border-wiki-blue focus:shadow-[inset_0_0_0_1px_#3366cc]"
-              >
-                {PROJECTS.map((p) => (
-                  <option key={p.value} value={p.value}>
-                    {p.label}
-                  </option>
-                ))}
-              </select>
             </div>
 
             {/* Submit */}

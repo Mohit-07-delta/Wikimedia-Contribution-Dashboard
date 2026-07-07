@@ -64,6 +64,12 @@ export interface MediaWikiGlobalUserInfoResponse {
       registration: string;
       name: string;
       editcount: number;
+      merged?: Array<{
+        wiki: string;
+        url: string;
+        editcount: number;
+        registration: string;
+      }>;
     };
   };
 }
@@ -91,6 +97,20 @@ export interface RecentEdit {
   comment: string;
   sizeChange: number;
   diffUrl: string;
+}
+
+export interface MergedWiki {
+  wikiName: string;
+  url: string;
+  editCount: number;
+  registrationDate: string;
+}
+
+export interface GlobalSummary {
+  username: string;
+  totalGlobalEdits: number;
+  totalWikis: number;
+  mergedWikis: MergedWiki[];
 }
 
 export interface HeatmapDay {
