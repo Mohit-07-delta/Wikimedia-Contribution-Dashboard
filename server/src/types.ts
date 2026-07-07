@@ -50,6 +50,22 @@ export interface MediaWikiUserContribsResponse {
   query: {
     usercontribs: MediaWikiUserContrib[];
   };
+  continue?: {
+    uccontinue: string;
+    continue: string;
+  };
+}
+
+export interface MediaWikiGlobalUserInfoResponse {
+  query: {
+    globaluserinfo?: {
+      home: string;
+      id: number;
+      registration: string;
+      name: string;
+      editcount: number;
+    };
+  };
 }
 
 // ── Our API output shapes ─────────────────────────────────────────────────────
@@ -61,6 +77,7 @@ export interface UserSummary {
   liveEdits: number;
   deletedEdits: number;
   registrationDate: string;
+  globalEditCount: number;
 }
 
 export interface NamespaceEdit {
@@ -74,6 +91,11 @@ export interface RecentEdit {
   comment: string;
   sizeChange: number;
   diffUrl: string;
+}
+
+export interface HeatmapDay {
+  date: string; // "YYYY-MM-DD"
+  count: number;
 }
 
 export interface ApiErrorResponse {

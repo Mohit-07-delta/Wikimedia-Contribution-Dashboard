@@ -1,3 +1,59 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  html {
+    font-size: 14px;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    color: #202122;
+    background-color: #f8f9fa;
+    line-height: 1.6;
+  }
+
+  /* Wikipedia-style link defaults */
+  a {
+    color: #3366cc;
+  }
+  a:hover {
+    color: #447ff5;
+    text-decoration: underline;
+  }
+
+  /* Wikipedia-style wikitable */
+  .wikitable {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+    line-height: 1.6;
+    border: 1px solid #a2a9b1;
+    background: #f8f9fa;
+  }
+
+  .wikitable th {
+    text-align: left;
+    font-weight: bold;
+    background: #eaecf0;
+    border: 1px solid #a2a9b1;
+    padding: 6px 8px;
+  }
+
+  .wikitable td {
+    border: 1px solid #a2a9b1;
+    padding: 6px 8px;
+    background: #ffffff;
+  }
+
+  .wikitable tr:nth-child(even) td {
+    background: #f8f9fa;
+  }
+
+  .wikitable tr:hover td {
+    background: #eaf3ff;
+  }
+}

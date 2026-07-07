@@ -2,16 +2,38 @@ import { useState, type FormEvent } from "react";
 import { useNavigate } from "react-router-dom";
 
 const PROJECTS = [
+  // Major Wikipedia Languages
   { label: "English Wikipedia", value: "en.wikipedia.org" },
   { label: "Hindi Wikipedia", value: "hi.wikipedia.org" },
+  { label: "Spanish Wikipedia", value: "es.wikipedia.org" },
+  { label: "French Wikipedia", value: "fr.wikipedia.org" },
+  { label: "German Wikipedia", value: "de.wikipedia.org" },
+  { label: "Japanese Wikipedia", value: "ja.wikipedia.org" },
+  { label: "Russian Wikipedia", value: "ru.wikipedia.org" },
+  { label: "Chinese Wikipedia", value: "zh.wikipedia.org" },
+  { label: "Arabic Wikipedia", value: "ar.wikipedia.org" },
+  { label: "Portuguese Wikipedia", value: "pt.wikipedia.org" },
+  { label: "Italian Wikipedia", value: "it.wikipedia.org" },
+  // Core Wikimedia Projects
   { label: "Wikidata", value: "www.wikidata.org" },
   { label: "Wikimedia Commons", value: "commons.wikimedia.org" },
+  { label: "Meta-Wiki", value: "meta.wikimedia.org" },
+  { label: "MediaWiki", value: "www.mediawiki.org" },
+  // Sister Projects (English)
+  { label: "Wiktionary (EN)", value: "en.wiktionary.org" },
+  { label: "Wikisource (EN)", value: "en.wikisource.org" },
+  { label: "Wikiquote (EN)", value: "en.wikiquote.org" },
+  { label: "Wikibooks (EN)", value: "en.wikibooks.org" },
+  { label: "Wikinews (EN)", value: "en.wikinews.org" },
+  { label: "Wikiversity (EN)", value: "en.wikiversity.org" },
+  { label: "Wikispecies", value: "species.wikimedia.org" },
+  { label: "Wikivoyage (EN)", value: "en.wikivoyage.org" },
 ] as const;
 
 export default function HomePage() {
   const navigate = useNavigate();
   const [username, setUsername] = useState("");
-  const [project, setProject] = useState(PROJECTS[0].value);
+  const [project, setProject] = useState<string>(PROJECTS[0].value);
   const [error, setError] = useState("");
 
   function handleSubmit(e: FormEvent) {
@@ -28,160 +50,128 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-indigo-950 flex items-center justify-center px-4">
-      {/* Subtle background glow */}
-      <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 w-[600px] h-[600px] bg-indigo-500/10 rounded-full blur-3xl" />
-      </div>
+    <div className="min-h-screen bg-wiki-bg">
+      {/* ── Wikipedia-style top bar ──────────────────────────────────────── */}
+      <header className="bg-wiki-header border-b border-wiki-border">
+        <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
+          {/* Wikipedia "W" style mark */}
+          <svg className="w-8 h-8 text-wiki-text" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12.09 13.119c-.14 1.064-.496 2.2-1.056 3.405-.56 1.205-1.254 2.2-2.08 2.985-.826.786-1.625 1.178-2.397 1.178-.485 0-.862-.17-1.13-.511-.268-.34-.402-.777-.402-1.311 0-.762.258-1.877.773-3.346.516-1.47 1.16-2.994 1.934-4.573.773-1.578 1.55-2.89 2.33-3.933.78-1.044 1.435-1.566 1.963-1.566.34 0 .597.186.773.557.175.372.263.81.263 1.317 0 .754-.146 1.717-.437 2.89-.292 1.173-.602 1.96-.93 2.36zm2.7-1.766c0-.134.047-.398.14-.793.094-.395.14-.66.14-.793 0-.554-.168-.831-.504-.831-.222 0-.46.155-.712.465-.253.31-.547.81-.881 1.501a29.596 29.596 0 0 0-1.056 2.64c-.34.963-.62 1.846-.84 2.65-.222.806-.332 1.36-.332 1.664 0 .42.144.63.433.63.29 0 .645-.28 1.063-.843.418-.563.865-1.32 1.341-2.272.476-.953.87-1.955 1.18-3.008.31-1.053.465-1.91.465-2.573l-.437.563z"/>
+          </svg>
+          <span className="font-serif text-xl text-wiki-text">
+            Contribution Dashboard
+          </span>
+        </div>
+      </header>
 
-      <div className="relative w-full max-w-md">
-        {/* Logo / Brand */}
-        <div className="text-center mb-10">
-          <div className="inline-flex items-center justify-center w-16 h-16 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 mb-6">
-            <svg
-              className="w-8 h-8 text-indigo-400"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={1.5}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M12 6.042A8.967 8.967 0 0 0 6 3.75c-1.052 0-2.062.18-3 .512v14.25A8.987 8.987 0 0 1 6 18c2.305 0 4.408.867 6 2.292m0-14.25a8.966 8.966 0 0 1 6-2.292c1.052 0 2.062.18 3 .512v14.25A8.987 8.987 0 0 0 18 18a8.967 8.967 0 0 0-6 2.292m0-14.25v14.25"
-              />
-            </svg>
-          </div>
-          <h1 className="text-3xl sm:text-4xl font-bold text-white tracking-tight">
-            Wikimedia Contribution
-            <span className="block text-indigo-400">Dashboard</span>
+      {/* ── Main content ────────────────────────────────────────────────── */}
+      <main className="max-w-xl mx-auto px-4 pt-12 pb-20">
+        {/* Title block */}
+        <div className="border-b border-wiki-border pb-4 mb-6">
+          <h1 className="font-serif text-3xl text-wiki-text leading-tight">
+            Wikimedia Contribution Dashboard
           </h1>
-          <p className="mt-3 text-slate-400 text-sm sm:text-base max-w-xs mx-auto">
-            Explore edit statistics, namespace breakdowns, and recent activity
-            for any Wikimedia contributor.
+          <p className="mt-2 text-wiki-secondary text-wiki-base">
+            Look up edit statistics, namespace breakdowns, and recent
+            contributions for any Wikimedia user across projects.
           </p>
         </div>
 
-        {/* Card */}
+        {/* Search form — styled like a Wikipedia infobox */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white/[0.04] backdrop-blur-xl border border-white/10 rounded-2xl p-6 sm:p-8 shadow-2xl shadow-black/20 space-y-5"
+          className="bg-wiki-surface border border-wiki-border rounded-wiki"
         >
-          {/* Username */}
-          <div>
-            <label
-              htmlFor="username"
-              className="block text-sm font-medium text-slate-300 mb-1.5"
-            >
-              Username
-            </label>
-            <input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => {
-                setUsername(e.target.value);
-                if (error) setError("");
-              }}
-              placeholder="e.g. Jimbo_Wales"
-              className={`w-full rounded-lg bg-white/[0.06] border px-4 py-2.5 text-white placeholder-slate-500 outline-none transition-colors focus:ring-2 focus:ring-indigo-500/40 ${
-                error
-                  ? "border-red-500/60 focus:border-red-500"
-                  : "border-white/10 focus:border-indigo-500"
-              }`}
-            />
-            {error && (
-              <p className="mt-1.5 text-sm text-red-400 flex items-center gap-1">
-                <svg
-                  className="w-4 h-4 shrink-0"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M12 9v3.75m9-.75a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9 3.75h.008v.008H12v-.008Z"
-                  />
-                </svg>
-                {error}
-              </p>
-            )}
+          {/* Form header bar */}
+          <div className="bg-[#eaecf0] border-b border-wiki-border px-4 py-2 rounded-t-wiki">
+            <h2 className="text-wiki-base font-bold text-wiki-text">
+              Look up a contributor
+            </h2>
           </div>
 
-          {/* Project */}
-          <div>
-            <label
-              htmlFor="project"
-              className="block text-sm font-medium text-slate-300 mb-1.5"
-            >
-              Project
-            </label>
-            <div className="relative">
+          <div className="px-4 py-4 space-y-4">
+            {/* Username */}
+            <div>
+              <label
+                htmlFor="username"
+                className="block text-wiki-sm font-bold text-wiki-text mb-1"
+              >
+                Username
+              </label>
+              <input
+                id="username"
+                type="text"
+                value={username}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  if (error) setError("");
+                }}
+                placeholder="e.g. Jimbo Wales"
+                className={`w-full border rounded-wiki px-3 py-1.5 text-wiki-base text-wiki-text bg-wiki-surface placeholder:text-wiki-muted outline-none transition-colors focus:border-wiki-blue focus:shadow-[inset_0_0_0_1px_#3366cc] ${
+                  error ? "border-wiki-red" : "border-wiki-border"
+                }`}
+              />
+              {error && (
+                <p className="mt-1 text-wiki-sm text-wiki-red">{error}</p>
+              )}
+            </div>
+
+            {/* Project */}
+            <div>
+              <label
+                htmlFor="project"
+                className="block text-wiki-sm font-bold text-wiki-text mb-1"
+              >
+                Project
+              </label>
               <select
                 id="project"
                 value={project}
                 onChange={(e) => setProject(e.target.value)}
-                className="w-full appearance-none rounded-lg bg-white/[0.06] border border-white/10 px-4 py-2.5 pr-10 text-white outline-none transition-colors focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/40"
+                className="w-full border border-wiki-border rounded-wiki px-3 py-1.5 text-wiki-base text-wiki-text bg-wiki-surface outline-none transition-colors focus:border-wiki-blue focus:shadow-[inset_0_0_0_1px_#3366cc]"
               >
                 {PROJECTS.map((p) => (
-                  <option
-                    key={p.value}
-                    value={p.value}
-                    className="bg-slate-900"
-                  >
+                  <option key={p.value} value={p.value}>
                     {p.label}
                   </option>
                 ))}
               </select>
-              <svg
-                className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400"
-                fill="none"
-                viewBox="0 0 24 24"
-                stroke="currentColor"
-                strokeWidth={2}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="m19.5 8.25-7.5 7.5-7.5-7.5"
-                />
-              </svg>
             </div>
-          </div>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            className="w-full rounded-lg bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium py-2.5 transition-colors focus:outline-none focus:ring-2 focus:ring-indigo-500/40 focus:ring-offset-2 focus:ring-offset-slate-900 cursor-pointer"
-          >
-            View Dashboard
-          </button>
+            {/* Submit */}
+            <button
+              type="submit"
+              className="inline-flex items-center gap-2 px-4 py-1.5 border border-wiki-border rounded-wiki bg-[#f8f9fa] hover:bg-[#eaecf0] active:bg-[#c8ccd1] text-wiki-base font-bold text-wiki-text transition-colors cursor-pointer"
+            >
+              View Dashboard
+            </button>
+          </div>
         </form>
 
-        {/* Footer */}
-        <p className="mt-6 text-center text-xs text-slate-600">
-          Data sourced from{" "}
-          <a
-            href="https://xtools.wmcloud.org"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-slate-500 hover:text-indigo-400 transition-colors underline underline-offset-2"
-          >
-            XTools
-          </a>{" "}
-          &amp;{" "}
-          <a
-            href="https://www.mediawiki.org/wiki/API:Main_page"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-slate-500 hover:text-indigo-400 transition-colors underline underline-offset-2"
-          >
-            MediaWiki API
-          </a>
-        </p>
-      </div>
+        {/* Info note */}
+        <div className="mt-6 border-l-[3px] border-wiki-blue bg-wiki-blue-light px-4 py-3 rounded-wiki">
+          <p className="text-wiki-sm text-wiki-text">
+            <strong>Tip:</strong> Enter the exact Wikimedia username
+            (case-sensitive). Data is sourced from{" "}
+            <a
+              href="https://xtools.wmcloud.org"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              XTools
+            </a>{" "}
+            and the{" "}
+            <a
+              href="https://www.mediawiki.org/wiki/API:Main_page"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              MediaWiki API
+            </a>
+            .
+          </p>
+        </div>
+      </main>
     </div>
   );
 }

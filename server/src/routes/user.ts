@@ -5,9 +5,11 @@ import type {
   XToolsNamespaceTotalsResponse,
   MediaWikiUserContribsResponse,
   MediaWikiUsersResponse,
+  MediaWikiGlobalUserInfoResponse,
   UserSummary,
   NamespaceEdit,
   RecentEdit,
+  HeatmapDay,
 } from "../types";
 
 const router = Router();
@@ -162,12 +164,25 @@ router.get(
       });
       const userInfoUrl = `https://${project}/w/api.php?${userInfoParams.toString()}`;
 
-      const [editData, userInfo] = await Promise.all([
+      // Global user info from Meta-Wiki
+      const globalParams = new URLSearchParams({
+        action: "query",
+        meta: "globaluserinfo",
+        guiuser: username,
+        guiprop: "editcount",
+        format: "json",
+        origin: "*",
+      });
+      const globalUrl = `https://meta.wikimedia.org/w/api.php?${globalParams.toString()}`;
+
+      const [editData, userInfo, globalInfo] = await Promise.all([
         fetchJson<XToolsSimpleEditCountResponse>(xToolsUrl),
         fetchJson<MediaWikiUsersResponse>(userInfoUrl),
+        fetchJson<MediaWikiGlobalUserInfoResponse>(globalUrl),
       ]);
 
       const registration = userInfo.query.users[0]?.registration ?? "unknown";
+      const globalEditCount = globalInfo.query.globaluserinfo?.editcount ?? 0;
 
       const summary: UserSummary = {
         username: editData.username,
@@ -176,6 +191,7 @@ router.get(
         liveEdits: editData.live_edit_count,
         deletedEdits: editData.deleted_edit_count,
         registrationDate: registration,
+        globalEditCount,
       };
 
       cache.set(cacheKey, summary);
@@ -260,6 +276,77 @@ router.get(
 
       cache.set(cacheKey, edits);
       res.json(edits);
+    } catch (err) {
+      sendError(res, err);
+    }
+  }
+);
+
+// ── Route 4: Contribution heatmap ─────────────────────────────────────────────
+
+router.get(
+  "/:project/:username/heatmap",
+  async (req: Request, res: Response) => {
+    const { project, username } = req.params;
+    const cacheKey = MemoryCache.key("heatmap", project, username);
+
+    const cached = cache.get<HeatmapDay[]>(cacheKey);
+    if (cached) {
+      res.json(cached);
+      return;
+    }
+
+    try {
+      // Date boundary: 12 months ago from today
+      const now = new Date();
+      const cutoff = new Date(now);
+      cutoff.setFullYear(cutoff.getFullYear() - 1);
+      const cutoffIso = cutoff.toISOString();
+
+      // Paginate through usercontribs, up to 500 edits total
+      const MAX_EDITS = 500;
+      const allTimestamps: string[] = [];
+      let uccontinue: string | undefined;
+
+      while (allTimestamps.length < MAX_EDITS) {
+        const params = new URLSearchParams({
+          action: "query",
+          list: "usercontribs",
+          ucuser: username,
+          uclimit: String(Math.min(50, MAX_EDITS - allTimestamps.length)),
+          ucprop: "timestamp",
+          ucend: cutoffIso,       // stop at 12 months ago
+          format: "json",
+          origin: "*",
+        });
+        if (uccontinue) params.set("uccontinue", uccontinue);
+
+        const url = `https://${project}/w/api.php?${params.toString()}`;
+        const data = await fetchJson<MediaWikiUserContribsResponse>(url);
+
+        for (const c of data.query.usercontribs) {
+          allTimestamps.push(c.timestamp);
+        }
+
+        if (!data.continue?.uccontinue || data.query.usercontribs.length === 0) {
+          break;
+        }
+        uccontinue = data.continue.uccontinue;
+      }
+
+      // Aggregate by YYYY-MM-DD
+      const counts = new Map<string, number>();
+      for (const ts of allTimestamps) {
+        const day = ts.slice(0, 10); // "2024-07-01T..." → "2024-07-01"
+        counts.set(day, (counts.get(day) ?? 0) + 1);
+      }
+
+      const heatmap: HeatmapDay[] = Array.from(counts.entries())
+        .map(([date, count]) => ({ date, count }))
+        .sort((a, b) => a.date.localeCompare(b.date));
+
+      cache.set(cacheKey, heatmap);
+      res.json(heatmap);
     } catch (err) {
       sendError(res, err);
     }
