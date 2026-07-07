@@ -7,6 +7,9 @@ interface HeatmapDay {
 
 interface Props {
   data: HeatmapDay[];
+  availableYears: number[];
+  selectedYear: number;
+  onYearChange: (year: number) => void;
 }
 
 const DAY_LABELS = ["", "Mon", "", "Wed", "", "Fri", ""];
@@ -32,7 +35,7 @@ function getCellBorder(count: number): string {
   return "transparent";
 }
 
-export default function ContributionHeatmap({ data }: Props) {
+export default function ContributionHeatmap({ data, availableYears, selectedYear, onYearChange }: Props) {
   const [tooltip, setTooltip] = useState<{
     x: number;
     y: number;
@@ -46,26 +49,31 @@ export default function ContributionHeatmap({ data }: Props) {
     countMap.set(d.date, d.count);
   }
 
-  // Build 53 weeks of days, ending today
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const dayOfWeek = today.getDay(); // 0 = Sunday
+  // Build grid spanning from Jan 1st to Dec 31st of selectedYear
+  const startOfYear = new Date(selectedYear, 0, 1);
+  const startDayOfWeek = startOfYear.getDay(); // 0 = Sunday
+  const startDate = new Date(startOfYear);
+  startDate.setDate(startDate.getDate() - startDayOfWeek);
 
-  // Start from 52 weeks ago, on the nearest Sunday
-  const startDate = new Date(today);
-  startDate.setDate(startDate.getDate() - (52 * 7 + dayOfWeek));
+  const endOfYear = new Date(selectedYear, 11, 31);
 
   // Generate all cells
-  const weeks: Array<Array<{ date: string; count: number; dateObj: Date }>> = [];
-  let currentWeek: Array<{ date: string; count: number; dateObj: Date }> = [];
+  const weeks: Array<Array<{ date: string; count: number; dateObj: Date; inYear: boolean }>> = [];
+  let currentWeek: Array<{ date: string; count: number; dateObj: Date; inYear: boolean }> = [];
 
   const cursor = new Date(startDate);
-  while (cursor <= today) {
+  while (cursor <= endOfYear || currentWeek.length > 0) {
+    if (currentWeek.length === 0 && cursor > endOfYear) {
+      break;
+    }
     const iso = cursor.toISOString().slice(0, 10);
+    const inYear = cursor.getFullYear() === selectedYear;
+    
     currentWeek.push({
       date: iso,
       count: countMap.get(iso) ?? 0,
       dateObj: new Date(cursor),
+      inYear,
     });
 
     if (currentWeek.length === 7) {
@@ -73,9 +81,6 @@ export default function ContributionHeatmap({ data }: Props) {
       currentWeek = [];
     }
     cursor.setDate(cursor.getDate() + 1);
-  }
-  if (currentWeek.length > 0) {
-    weeks.push(currentWeek);
   }
 
   // Month labels: find the first occurrence of each month in the grid
@@ -101,10 +106,25 @@ export default function ContributionHeatmap({ data }: Props) {
   return (
     <div>
       <div className="flex items-center justify-between mb-3">
-        <p className="text-wiki-sm text-wiki-muted">
-          <strong className="text-wiki-text">{totalInRange.toLocaleString()}</strong>{" "}
-          contributions in the last year
-        </p>
+        <div className="flex items-center gap-3">
+          {availableYears.length > 0 && (
+            <select
+              value={selectedYear}
+              onChange={(e) => onYearChange(parseInt(e.target.value, 10))}
+              className="px-2 py-1 bg-white border border-[#a2a9b1] rounded-wiki text-wiki-sm outline-none focus:border-wiki-blue"
+            >
+              {availableYears.map((year) => (
+                <option key={year} value={year}>
+                  {year}
+                </option>
+              ))}
+            </select>
+          )}
+          <p className="text-wiki-sm text-wiki-muted">
+            <strong className="text-wiki-text">{totalInRange.toLocaleString()}</strong>{" "}
+            contributions in {selectedYear}
+          </p>
+        </div>
         {/* Legend */}
         <div className="hidden sm:flex items-center gap-1 text-wiki-xs text-wiki-muted">
           <span>Less</span>
@@ -177,29 +197,30 @@ export default function ContributionHeatmap({ data }: Props) {
                   style={{ gap: CELL_GAP }}
                 >
                   {week.map((day) => (
-                    <div
-                      key={day.date}
-                      className="border cursor-default"
-                      style={{
-                        width: CELL_SIZE,
-                        height: CELL_SIZE,
-                        backgroundColor: getCellColor(day.count),
-                        borderColor: getCellBorder(day.count),
-                        borderRadius: 2,
-                      }}
-                      onMouseEnter={(e) => {
-                        const rect = (
-                          e.target as HTMLElement
-                        ).getBoundingClientRect();
-                        setTooltip({
-                          x: rect.left + rect.width / 2,
-                          y: rect.top,
-                          date: day.date,
-                          count: day.count,
-                        });
-                      }}
-                      onMouseLeave={() => setTooltip(null)}
-                    />
+                      <div
+                        key={day.date}
+                        className={`cursor-default ${day.inYear ? "border" : ""}`}
+                        style={{
+                          width: CELL_SIZE,
+                          height: CELL_SIZE,
+                          backgroundColor: day.inYear ? getCellColor(day.count) : "transparent",
+                          borderColor: day.inYear ? getCellBorder(day.count) : "transparent",
+                          borderRadius: 2,
+                        }}
+                        onMouseEnter={(e) => {
+                          if (!day.inYear) return;
+                          const rect = (
+                            e.target as HTMLElement
+                          ).getBoundingClientRect();
+                          setTooltip({
+                            x: rect.left + rect.width / 2,
+                            y: rect.top,
+                            date: day.date,
+                            count: day.count,
+                          });
+                        }}
+                        onMouseLeave={() => setTooltip(null)}
+                      />
                   ))}
                   {/* Pad short last week */}
                   {week.length < 7 &&

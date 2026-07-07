@@ -41,6 +41,11 @@ interface HeatmapDay {
   count: number;
 }
 
+interface HeatmapResponse {
+  heatmap: HeatmapDay[];
+  availableYears: number[];
+}
+
 type LoadState = "loading" | "success" | "error" | "empty";
 
 // ── Muted Wikimedia-style chart palette ───────────────────────────────────────
@@ -105,8 +110,11 @@ export default function DashboardPage() {
   const [namespaces, setNamespaces] = useState<NamespaceEdit[]>([]);
   const [recentEdits, setRecentEdits] = useState<RecentEdit[]>([]);
   const [heatmapData, setHeatmapData] = useState<HeatmapDay[]>([]);
+  const [availableYears, setAvailableYears] = useState<number[]>([]);
+  const [selectedYear, setSelectedYear] = useState<number>(new Date().getFullYear());
   const [state, setState] = useState<LoadState>("loading");
   const [errorMsg, setErrorMsg] = useState("");
+  const [heatmapLoading, setHeatmapLoading] = useState(false);
 
   function fetchData() {
     setState("loading");
@@ -127,16 +135,11 @@ export default function DashboardPage() {
         if (!r.ok) throw new Error(`Recent edits: ${r.status}`);
         return r.json() as Promise<RecentEdit[]>;
       }),
-      fetch(`${base}/heatmap`).then((r) => {
-        if (!r.ok) throw new Error(`Heatmap: ${r.status}`);
-        return r.json() as Promise<HeatmapDay[]>;
-      }),
     ])
-      .then(([sum, ns, edits, heat]) => {
+      .then(([sum, ns, edits]) => {
         setSummary(sum);
         setNamespaces(ns);
         setRecentEdits(edits);
-        setHeatmapData(heat);
         setState(sum.totalEdits === 0 ? "empty" : "success");
       })
       .catch((err) => {
@@ -154,6 +157,28 @@ export default function DashboardPage() {
     if (project && username) fetchData();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [project, username]);
+
+  useEffect(() => {
+    if (!project || !username) return;
+    const fetchHeatmap = async () => {
+      setHeatmapLoading(true);
+      try {
+        const res = await fetch(`/api/user/${project}/${username}/heatmap/${selectedYear}`);
+        if (!res.ok) throw new Error(`Heatmap: ${res.status}`);
+        const data = (await res.json()) as HeatmapResponse;
+        setHeatmapData(data.heatmap);
+        // Only set available years on the first fetch
+        if (availableYears.length === 0 && data.availableYears.length > 0) {
+          setAvailableYears(data.availableYears);
+        }
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setHeatmapLoading(false);
+      }
+    };
+    fetchHeatmap();
+  }, [project, username, selectedYear]);
 
   const decodedUser = decodeURIComponent(username ?? "");
 
@@ -424,19 +449,23 @@ export default function DashboardPage() {
 
             {/* ── Heatmap ─────────────────────────────────────────────── */}
             <section className="bg-wiki-surface border border-wiki-border rounded-wiki overflow-hidden">
-              <div className="bg-[#eaecf0] border-b border-wiki-border px-4 py-2">
+              <div className="bg-[#eaecf0] border-b border-wiki-border px-4 py-2 flex items-center justify-between">
                 <h2 className="text-wiki-base font-bold text-wiki-text">
-                  Activity (last 12 months)
+                  Activity ({selectedYear})
                 </h2>
-              </div>
-              <div className="p-4 overflow-x-auto">
-                {heatmapData.length > 0 ? (
-                  <ContributionHeatmap data={heatmapData} />
-                ) : (
-                  <p className="text-wiki-sm text-wiki-muted text-center py-4">
-                    No activity in the last 12 months.
-                  </p>
+                {heatmapLoading && (
+                  <span className="text-wiki-sm text-wiki-muted animate-pulse">
+                    Loading...
+                  </span>
                 )}
+              </div>
+              <div className="p-4 overflow-x-auto relative">
+                <ContributionHeatmap 
+                  data={heatmapData} 
+                  availableYears={availableYears}
+                  selectedYear={selectedYear}
+                  onYearChange={setSelectedYear}
+                />
               </div>
             </section>
 

@@ -122,3 +122,8 @@ export interface ApiErrorResponse {
   error: string;
   details?: string;
 }
+
+export interface HeatmapResponse {
+  heatmap: HeatmapDay[];
+  availableYears: number[];
+}

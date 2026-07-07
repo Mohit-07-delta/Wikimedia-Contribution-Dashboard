@@ -12,6 +12,7 @@ import type {
   HeatmapDay,
   GlobalSummary,
   MergedWiki,
+  HeatmapResponse,
 } from "../types";
 
 const router = Router();
@@ -340,26 +341,49 @@ router.get(
 // ── Route 4: Contribution heatmap ─────────────────────────────────────────────
 
 router.get(
-  "/:project/:username/heatmap",
+  "/:project/:username/heatmap/:year",
   async (req: Request, res: Response) => {
-    const { project, username } = req.params;
-    const cacheKey = MemoryCache.key("heatmap", project, username);
+    const { project, username, year } = req.params;
+    const cacheKey = MemoryCache.key("heatmap", project, username, year);
 
-    const cached = cache.get<HeatmapDay[]>(cacheKey);
+    const cached = cache.get<HeatmapResponse>(cacheKey);
     if (cached) {
       res.json(cached);
       return;
     }
 
     try {
-      // Date boundary: 12 months ago from today
-      const now = new Date();
-      const cutoff = new Date(now);
-      cutoff.setFullYear(cutoff.getFullYear() - 1);
-      const cutoffIso = cutoff.toISOString();
+      // 1. Fetch user registration date to compute available years
+      const userInfoParams = new URLSearchParams({
+        action: "query",
+        list: "users",
+        ususers: username,
+        usprop: "registration",
+        format: "json",
+        origin: "*",
+      });
+      const userInfoUrl = `https://${project}/w/api.php?${userInfoParams.toString()}`;
+      const userInfo = await fetchJson<MediaWikiUsersResponse>(userInfoUrl);
+      const registrationDate = userInfo.query.users[0]?.registration;
+      
+      const currentYear = new Date().getFullYear();
+      let regYear = currentYear;
+      if (registrationDate) {
+        regYear = new Date(registrationDate).getFullYear();
+      }
+      
+      const availableYears: number[] = [];
+      for (let y = currentYear; y >= regYear; y--) {
+        availableYears.push(y);
+      }
 
-      // Paginate through usercontribs, up to 500 edits total
-      const MAX_EDITS = 500;
+      // 2. Set date boundaries for the specified year
+      const targetYear = parseInt(year, 10);
+      const startOfYear = new Date(Date.UTC(targetYear, 0, 1, 0, 0, 0)).toISOString();
+      const endOfYear = new Date(Date.UTC(targetYear, 11, 31, 23, 59, 59)).toISOString();
+
+      // Paginate through usercontribs, up to 1000 edits total for the year
+      const MAX_EDITS = 1000;
       const allTimestamps: string[] = [];
       let uccontinue: string | undefined;
 
@@ -370,7 +394,8 @@ router.get(
           ucuser: username,
           uclimit: String(Math.min(50, MAX_EDITS - allTimestamps.length)),
           ucprop: "timestamp",
-          ucend: cutoffIso,       // stop at 12 months ago
+          ucstart: endOfYear, // MediaWiki iterates backwards in time by default
+          ucend: startOfYear,
           format: "json",
           origin: "*",
         });
@@ -392,7 +417,7 @@ router.get(
       // Aggregate by YYYY-MM-DD
       const counts = new Map<string, number>();
       for (const ts of allTimestamps) {
-        const day = ts.slice(0, 10); // "2024-07-01T..." → "2024-07-01"
+        const day = ts.slice(0, 10);
         counts.set(day, (counts.get(day) ?? 0) + 1);
       }
 
@@ -400,8 +425,9 @@ router.get(
         .map(([date, count]) => ({ date, count }))
         .sort((a, b) => a.date.localeCompare(b.date));
 
-      cache.set(cacheKey, heatmap);
-      res.json(heatmap);
+      const response: HeatmapResponse = { heatmap, availableYears };
+      cache.set(cacheKey, response);
+      res.json(response);
     } catch (err) {
       sendError(res, err);
     }
