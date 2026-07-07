@@ -165,7 +165,7 @@ router.get("/global/:username", async (req: Request, res: Response) => {
     const globalInfo = await fetchJson<MediaWikiGlobalUserInfoResponse>(globalUrl);
     const info = globalInfo.query.globaluserinfo;
 
-    if (!info) {
+    if (!info || "missing" in info || "invalid" in info) {
       throw new ApiProxyError("not_found", `User '${username}' not found globally`);
     }
 
@@ -232,10 +232,17 @@ router.get(
       const globalUrl = `https://meta.wikimedia.org/w/api.php?${globalParams.toString()}`;
 
       const [editData, userInfo, globalInfo] = await Promise.all([
-        fetchJson<XToolsSimpleEditCountResponse>(xToolsUrl),
+        fetchJson<XToolsSimpleEditCountResponse & { error?: string }>(xToolsUrl),
         fetchJson<MediaWikiUsersResponse>(userInfoUrl),
         fetchJson<MediaWikiGlobalUserInfoResponse>(globalUrl),
       ]);
+
+      if (editData.error) {
+        throw new ApiProxyError("not_found", editData.error);
+      }
+      if (userInfo.query?.users?.[0] && ("missing" in userInfo.query.users[0] || "invalid" in userInfo.query.users[0])) {
+        throw new ApiProxyError("not_found", `User '${username}' not found on ${project}`);
+      }
 
       const registration = userInfo.query.users[0]?.registration ?? "unknown";
       const globalEditCount = globalInfo.query.globaluserinfo?.editcount ?? 0;
@@ -274,11 +281,13 @@ router.get(
 
     try {
       const url = `${XTOOLS_BASE}/namespace_totals/${encodeURIComponent(project)}/${encodeURIComponent(username)}`;
-      const data = await fetchJson<XToolsNamespaceTotalsResponse>(url);
+      const data = await fetchJson<XToolsNamespaceTotalsResponse & { error?: string }>(url);
 
-      const namespaces: NamespaceEdit[] = Object.entries(
-        data.namespace_totals
-      ).map(([nsId, count]) => ({
+      if (data.error) {
+        throw new ApiProxyError("not_found", data.error);
+      }
+
+      const namespaces: NamespaceEdit[] = Object.entries(data.namespace_totals).map(([nsId, count]) => ({
         namespace: NAMESPACE_NAMES[nsId] ?? `Namespace ${nsId}`,
         count,
       }));
@@ -321,6 +330,10 @@ router.get(
 
       const url = `https://${project}/w/api.php?${params.toString()}`;
       const data = await fetchJson<MediaWikiUserContribsResponse>(url);
+
+      if (!data.query || !data.query.usercontribs) {
+        throw new ApiProxyError("not_found", "User or contributions not found");
+      }
 
       const edits: RecentEdit[] = data.query.usercontribs.map((contrib) => ({
         title: contrib.title,
