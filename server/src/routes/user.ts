@@ -20,7 +20,7 @@ const router = Router();
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
 const XTOOLS_BASE = "https://xtools.wmcloud.org/api/user";
-const FETCH_TIMEOUT_MS = 10_000; // 10 seconds
+const FETCH_TIMEOUT_MS = 30_000; // 30 seconds
 
 /** Human-readable names for MediaWiki namespace IDs */
 const NAMESPACE_NAMES: Record<string, string> = {

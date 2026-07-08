@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Footer from "../components/Footer";
 import { useParams, Link } from "react-router-dom";
 import {
   PieChart,
@@ -120,7 +121,8 @@ export default function DashboardPage() {
     setState("loading");
     setErrorMsg("");
 
-    const base = `/api/user/${project}/${username}`;
+    const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+    const base = `${API_BASE}/api/user/${project}/${username}`;
 
     Promise.all([
       fetch(`${base}/summary`).then((r) => {
@@ -147,6 +149,8 @@ export default function DashboardPage() {
         setErrorMsg(
           err.message?.includes("404")
             ? "User not found on this project. Check the username and try again."
+            : err.message?.includes("504") || err.message?.includes("Timeout")
+            ? "The Wikimedia servers are taking too long to respond. Please try again later."
             : "Something went wrong while fetching data. Please try again."
         );
         setState("error");
@@ -163,7 +167,8 @@ export default function DashboardPage() {
     const fetchHeatmap = async () => {
       setHeatmapLoading(true);
       try {
-        const url = `/api/user/${project}/${username}/heatmap/${selectedYear}`;
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+        const url = `${API_BASE}/api/user/${project}/${username}/heatmap/${selectedYear}`;
         console.log(`[Frontend] Fetching heatmap for year ${selectedYear} -> ${url}`);
         const res = await fetch(url);
         if (!res.ok) throw new Error(`Heatmap: ${res.status}`);
@@ -213,7 +218,7 @@ export default function DashboardPage() {
   // ── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-wiki-bg">
+    <div className="min-h-screen bg-wiki-bg flex flex-col">
       {/* ── Header bar ─────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-wiki-border sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -576,6 +581,7 @@ export default function DashboardPage() {
           . Not affiliated with the Wikimedia Foundation.
         </p>
       </footer>
+      <Footer />
     </div>
   );
 }

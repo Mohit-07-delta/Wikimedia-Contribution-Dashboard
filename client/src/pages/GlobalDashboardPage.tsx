@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import Footer from "../components/Footer";
 import { useParams, Link } from "react-router-dom";
 import { formatNumber, formatAccountAge } from "../utils/format";
 
@@ -29,7 +30,8 @@ export default function GlobalDashboardPage() {
       setLoading(true);
       setError("");
       try {
-        const res = await fetch(`/api/user/global/${encodeURIComponent(username)}`);
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || "";
+        const res = await fetch(`${API_BASE}/api/user/global/${encodeURIComponent(username)}`);
         const data = await res.json();
         
         if (!res.ok) {
@@ -38,7 +40,14 @@ export default function GlobalDashboardPage() {
         
         setSummary(data);
       } catch (err) {
-        setError(err instanceof Error ? err.message : "An error occurred");
+        const message = err instanceof Error ? err.message : "An error occurred";
+        setError(
+          message.includes("404")
+            ? "User not found globally. Check the username and try again."
+            : message.includes("504") || message.includes("Timeout")
+            ? "The Wikimedia servers are taking too long to respond. Please try again later."
+            : message
+        );
       } finally {
         setLoading(false);
       }
@@ -82,7 +91,7 @@ export default function GlobalDashboardPage() {
   else if (summary.totalGlobalEdits >= 100) milestone = "100+ Edits";
 
   return (
-    <div className="min-h-screen bg-wiki-bg">
+    <div className="min-h-screen bg-wiki-bg flex flex-col">
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-wiki-border sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -195,6 +204,7 @@ export default function GlobalDashboardPage() {
         </section>
 
       </main>
+      <Footer />
     </div>
   );
 }

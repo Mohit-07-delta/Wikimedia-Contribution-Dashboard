@@ -3,10 +3,13 @@
   "version": "1.0.0",
   "description": "React + TypeScript + Vite client for wiki-dashboard",
   "type": "module",
+  "homepage": "https://Mohit-07-delta.github.io/Wikimedia-Contribution-Dashboard",
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d dist"
   },
   "dependencies": {
     "react": "^18.2.0",

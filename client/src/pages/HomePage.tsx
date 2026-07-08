@@ -1,4 +1,5 @@
 import { useState, type FormEvent } from "react";
+import Footer from "../components/Footer";
 import { useNavigate } from "react-router-dom";
 
 export default function HomePage() {
@@ -20,7 +21,7 @@ export default function HomePage() {
   }
 
   return (
-    <div className="min-h-screen bg-wiki-bg">
+    <div className="min-h-screen bg-wiki-bg flex flex-col">
       {/* ── Wikipedia-style top bar ──────────────────────────────────────── */}
       <header className="bg-white border-b border-wiki-border">
         <div className="max-w-4xl mx-auto px-4 py-3 flex items-center gap-3">
@@ -120,6 +121,7 @@ export default function HomePage() {
           </p>
         </div>
       </main>
+      <Footer />
     </div>
   );
 }
