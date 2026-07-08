@@ -150,7 +150,7 @@ export default function GlobalDashboardPage() {
             </h2>
           </div>
           
-          <div className="bg-wiki-surface border border-wiki-border rounded-wiki overflow-hidden">
+          <div className="bg-wiki-surface border border-wiki-border rounded-wiki overflow-x-auto">
             <table className="w-full text-left text-wiki-base">
               <thead className="bg-[#eaecf0] border-b border-wiki-border">
                 <tr>

@@ -413,8 +413,8 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Table breakdown */}
-                  <div className="w-full lg:w-1/2">
-                    <table className="wikitable text-wiki-sm">
+                  <div className="w-full lg:w-1/2 overflow-x-auto">
+                    <table className="wikitable text-wiki-sm w-full">
                       <thead>
                         <tr>
                           <th>Namespace</th>
@@ -485,74 +485,76 @@ export default function DashboardPage() {
               </div>
 
               {recentEdits.length > 0 ? (
-                <table className="wikitable">
-                  <thead>
-                    <tr>
-                      <th>Page</th>
-                      <th>Comment</th>
-                      <th className="text-right">Size</th>
-                      <th className="text-right">Time</th>
-                      <th className="text-center">Diff</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {recentEdits.map((edit, i) => (
-                      <tr key={i}>
-                        {/* Page */}
-                        <td className="font-bold max-w-[200px]">
-                          <span className="line-clamp-1">{edit.title}</span>
-                        </td>
-
-                        {/* Comment — italic like Wikipedia edit summaries */}
-                        <td className="italic text-wiki-secondary max-w-[260px]">
-                          <span className="line-clamp-1">
-                            {edit.comment || (
-                              <span className="text-wiki-muted not-italic">
-                                (no edit summary)
-                              </span>
-                            )}
-                          </span>
-                        </td>
-
-                        {/* Size change */}
-                        <td className="text-right tabular-nums whitespace-nowrap">
-                          <span
-                            className={`font-bold ${
-                              edit.sizeChange > 0
-                                ? "text-wiki-green"
-                                : edit.sizeChange < 0
-                                ? "text-wiki-red"
-                                : "text-wiki-muted"
-                            }`}
-                          >
-                            {edit.sizeChange > 0 ? "+" : ""}
-                            {formatNumber(edit.sizeChange)}
-                          </span>
-                        </td>
-
-                        {/* Timestamp */}
-                        <td
-                          className="text-right text-wiki-muted whitespace-nowrap"
-                          title={new Date(edit.timestamp).toLocaleString()}
-                        >
-                          {timeAgo(edit.timestamp)}
-                        </td>
-
-                        {/* Diff link */}
-                        <td className="text-center">
-                          <a
-                            href={edit.diffUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-wiki-blue hover:text-wiki-blue-hover text-wiki-sm"
-                          >
-                            diff
-                          </a>
-                        </td>
+                <div className="overflow-x-auto">
+                  <table className="wikitable w-full">
+                    <thead>
+                      <tr>
+                        <th>Page</th>
+                        <th>Comment</th>
+                        <th className="text-right">Size</th>
+                        <th className="text-right">Time</th>
+                        <th className="text-center">Diff</th>
                       </tr>
-                    ))}
-                  </tbody>
-                </table>
+                    </thead>
+                    <tbody>
+                      {recentEdits.map((edit, i) => (
+                        <tr key={i}>
+                          {/* Page */}
+                          <td className="font-bold max-w-[200px]">
+                            <span className="line-clamp-1">{edit.title}</span>
+                          </td>
+
+                          {/* Comment — italic like Wikipedia edit summaries */}
+                          <td className="italic text-wiki-secondary max-w-[260px]">
+                            <span className="line-clamp-1">
+                              {edit.comment || (
+                                <span className="text-wiki-muted not-italic">
+                                  (no edit summary)
+                                </span>
+                              )}
+                            </span>
+                          </td>
+
+                          {/* Size change */}
+                          <td className="text-right tabular-nums whitespace-nowrap">
+                            <span
+                              className={`font-bold ${
+                                edit.sizeChange > 0
+                                  ? "text-wiki-green"
+                                  : edit.sizeChange < 0
+                                  ? "text-wiki-red"
+                                  : "text-wiki-muted"
+                              }`}
+                            >
+                              {edit.sizeChange > 0 ? "+" : ""}
+                              {formatNumber(edit.sizeChange)}
+                            </span>
+                          </td>
+
+                          {/* Timestamp */}
+                          <td
+                            className="text-right text-wiki-muted whitespace-nowrap"
+                            title={new Date(edit.timestamp).toLocaleString()}
+                          >
+                            {timeAgo(edit.timestamp)}
+                          </td>
+
+                          {/* Diff link */}
+                          <td className="text-center">
+                            <a
+                              href={edit.diffUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-wiki-blue hover:text-wiki-blue-hover text-wiki-sm"
+                            >
+                              diff
+                            </a>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
               ) : (
                 <p className="p-4 text-wiki-sm text-wiki-muted text-center">
                   No recent edits found.
