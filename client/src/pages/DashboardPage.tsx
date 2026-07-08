@@ -338,7 +338,7 @@ export default function DashboardPage() {
         {state === "success" && summary && (
           <div className="space-y-6">
             {/* ── Stat cards ──────────────────────────────────────────── */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
               {stats.map((s) => (
                 <div
                   key={s.label}
@@ -414,7 +414,8 @@ export default function DashboardPage() {
 
                   {/* Table breakdown */}
                   <div className="w-full lg:w-1/2 overflow-x-auto max-w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
-                    <table className="wikitable text-wiki-sm w-full min-w-[300px]">
+                    {/* Desktop Table */}
+                    <table className="hidden md:table wikitable text-wiki-sm w-full min-w-[300px]">
                       <thead>
                         <tr>
                           <th>Namespace</th>
@@ -445,6 +446,28 @@ export default function DashboardPage() {
                         })}
                       </tbody>
                     </table>
+
+                    {/* Mobile Cards */}
+                    <div className="md:hidden flex flex-col divide-y divide-wiki-border border border-wiki-border rounded-wiki overflow-hidden">
+                      {namespaces.map((ns) => {
+                        const pct =
+                          summary.totalEdits > 0
+                            ? (
+                                (ns.count / summary.totalEdits) *
+                                100
+                              ).toFixed(1)
+                            : "0";
+                        return (
+                          <div key={ns.namespace} className="p-3 bg-wiki-surface flex justify-between items-center">
+                            <span className="font-bold text-wiki-text">{ns.namespace}</span>
+                            <div className="text-right">
+                              <div className="font-bold tabular-nums">{formatNumber(ns.count)}</div>
+                              <div className="text-wiki-xs text-wiki-muted tabular-nums">{pct}%</div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
                   </div>
                 </div>
               ) : (
@@ -486,7 +509,8 @@ export default function DashboardPage() {
 
               {recentEdits.length > 0 ? (
                 <div className="overflow-x-auto max-w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
-                  <table className="wikitable w-full min-w-[500px]">
+                  {/* Desktop Table */}
+                  <table className="hidden md:table wikitable w-full min-w-[500px]">
                     <thead>
                       <tr>
                         <th>Page</th>
@@ -554,6 +578,57 @@ export default function DashboardPage() {
                       ))}
                     </tbody>
                   </table>
+
+                  {/* Mobile Cards */}
+                  <div className="md:hidden flex flex-col divide-y divide-wiki-border">
+                    {recentEdits.map((edit, i) => (
+                      <div key={i} className="p-4 flex flex-col gap-2">
+                        <div className="font-bold text-wiki-text text-base">
+                          {edit.title}
+                        </div>
+                        <div className="text-wiki-sm italic text-wiki-secondary">
+                          {edit.comment || (
+                            <span className="text-wiki-muted not-italic">
+                              (no edit summary)
+                            </span>
+                          )}
+                        </div>
+                        <div className="flex justify-between items-center mt-1">
+                          <div className="text-wiki-sm text-wiki-text">
+                            <span className="font-bold">Size:</span>{" "}
+                            <span
+                              className={`font-bold tabular-nums ${
+                                edit.sizeChange > 0
+                                  ? "text-wiki-green"
+                                  : edit.sizeChange < 0
+                                  ? "text-wiki-red"
+                                  : "text-wiki-muted"
+                              }`}
+                            >
+                              {edit.sizeChange > 0 ? "+" : ""}
+                              {formatNumber(edit.sizeChange)}
+                            </span>
+                          </div>
+                          <div
+                            className="text-wiki-sm text-wiki-muted tabular-nums"
+                            title={new Date(edit.timestamp).toLocaleString()}
+                          >
+                            {timeAgo(edit.timestamp)}
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <a
+                            href={edit.diffUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="inline-block text-sm border border-wiki-blue text-wiki-blue text-center font-bold px-4 py-2 rounded-wiki transition-colors active:bg-[#c8ccd1] hover:bg-[#eaecf0]"
+                          >
+                            View Diff
+                          </a>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
                 </div>
               ) : (
                 <p className="p-4 text-wiki-sm text-wiki-muted text-center">

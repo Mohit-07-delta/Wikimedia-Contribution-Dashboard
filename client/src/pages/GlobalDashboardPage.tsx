@@ -151,7 +151,8 @@ export default function GlobalDashboardPage() {
           </div>
           
           <div className="bg-wiki-surface border border-wiki-border rounded-wiki overflow-x-auto max-w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
-            <table className="w-full text-left text-wiki-base min-w-[500px]">
+            {/* Desktop Table */}
+            <table className="hidden md:table w-full text-left text-wiki-base min-w-[500px]">
               <thead className="bg-[#eaecf0] border-b border-wiki-border">
                 <tr>
                   <th className="px-4 py-2 font-bold text-wiki-text">Wiki Project</th>
@@ -162,7 +163,6 @@ export default function GlobalDashboardPage() {
               </thead>
               <tbody className="divide-y divide-wiki-border">
                 {summary.mergedWikis.map((wiki) => {
-                  // Extract domain from URL (e.g., https://en.wikipedia.org -> en.wikipedia.org)
                   const projectDomain = wiki.url.replace(/^https?:\/\//, '');
                   
                   return (
@@ -200,6 +200,45 @@ export default function GlobalDashboardPage() {
                 })}
               </tbody>
             </table>
+
+            {/* Mobile Cards */}
+            <div className="md:hidden flex flex-col divide-y divide-wiki-border">
+              {summary.mergedWikis.map((wiki) => {
+                const projectDomain = wiki.url.replace(/^https?:\/\//, '');
+                return (
+                  <div key={wiki.wikiName} className="p-4 flex flex-col gap-2 hover:bg-[#f8f9fa] transition-colors">
+                    <a 
+                      href={wiki.url} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="font-bold text-wiki-blue text-lg hover:underline"
+                    >
+                      {projectDomain}
+                    </a>
+                    <div className="text-wiki-sm text-wiki-text">
+                      <span className="font-bold">Edit Count:</span> {formatNumber(wiki.editCount)}
+                    </div>
+                    {wiki.registrationDate && (
+                      <div className="text-wiki-sm text-wiki-text">
+                        <span className="font-bold">Registration:</span> {formatAccountAge(wiki.registrationDate)}
+                      </div>
+                    )}
+                    <div className="mt-2">
+                      {wiki.editCount > 0 ? (
+                        <Link 
+                          to={`/dashboard/${projectDomain}/${encodeURIComponent(summary.username)}`}
+                          className="inline-block text-sm border border-wiki-blue text-wiki-blue text-center font-bold px-4 py-2 rounded-wiki transition-colors active:bg-[#c8ccd1] hover:bg-[#eaecf0]"
+                        >
+                          View Details
+                        </Link>
+                      ) : (
+                        <span className="text-sm text-wiki-muted italic">No edits</span>
+                      )}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
           </div>
         </section>
 
