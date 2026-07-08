@@ -218,7 +218,7 @@ export default function DashboardPage() {
   // ── Render ──────────────────────────────────────────────────────────────
 
   return (
-    <div className="min-h-screen bg-wiki-bg flex flex-col">
+    <div className="min-h-screen bg-wiki-bg flex flex-col max-w-full overflow-x-hidden">
       {/* ── Header bar ─────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-wiki-border sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -413,8 +413,8 @@ export default function DashboardPage() {
                   </div>
 
                   {/* Table breakdown */}
-                  <div className="w-full lg:w-1/2 overflow-x-auto">
-                    <table className="wikitable text-wiki-sm w-full">
+                  <div className="w-full lg:w-1/2 overflow-x-auto max-w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
+                    <table className="wikitable text-wiki-sm w-full min-w-[300px]">
                       <thead>
                         <tr>
                           <th>Namespace</th>
@@ -485,8 +485,8 @@ export default function DashboardPage() {
               </div>
 
               {recentEdits.length > 0 ? (
-                <div className="overflow-x-auto">
-                  <table className="wikitable w-full">
+                <div className="overflow-x-auto max-w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
+                  <table className="wikitable w-full min-w-[500px]">
                     <thead>
                       <tr>
                         <th>Page</th>

@@ -146,7 +146,7 @@ export default function ContributionHeatmap({ data, availableYears, selectedYear
       </div>
 
       {/* Grid */}
-      <div className="overflow-x-auto pb-1 relative">
+      <div className="overflow-x-auto pb-1 relative max-w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
         <div style={{ minWidth: weeks.length * (CELL_SIZE + CELL_GAP) + 30 }}>
           {/* Month labels row */}
           <div

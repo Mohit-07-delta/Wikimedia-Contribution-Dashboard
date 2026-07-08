@@ -91,7 +91,7 @@ export default function GlobalDashboardPage() {
   else if (summary.totalGlobalEdits >= 100) milestone = "100+ Edits";
 
   return (
-    <div className="min-h-screen bg-wiki-bg flex flex-col">
+    <div className="min-h-screen bg-wiki-bg flex flex-col max-w-full overflow-x-hidden">
       {/* ── Header ──────────────────────────────────────────────────────── */}
       <header className="bg-white border-b border-wiki-border sticky top-0 z-10">
         <div className="max-w-5xl mx-auto px-4 py-3 flex items-center justify-between">
@@ -150,8 +150,8 @@ export default function GlobalDashboardPage() {
             </h2>
           </div>
           
-          <div className="bg-wiki-surface border border-wiki-border rounded-wiki overflow-x-auto">
-            <table className="w-full text-left text-wiki-base">
+          <div className="bg-wiki-surface border border-wiki-border rounded-wiki overflow-x-auto max-w-full" style={{ WebkitOverflowScrolling: 'touch' }}>
+            <table className="w-full text-left text-wiki-base min-w-[500px]">
               <thead className="bg-[#eaecf0] border-b border-wiki-border">
                 <tr>
                   <th className="px-4 py-2 font-bold text-wiki-text">Wiki Project</th>
